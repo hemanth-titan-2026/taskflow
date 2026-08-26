@@ -1,6 +1,8 @@
 # ─── Stage 1: Dependencies ────────────────────────────────────────────────────
 FROM node:20-alpine AS deps
 
+RUN apk add --no-cache openssl
+
 WORKDIR /app
 
 COPY package.json package-lock.json* yarn.lock* pnpm-lock.yaml* ./
@@ -11,6 +13,8 @@ RUN npm ci --omit=dev && \
 
 # ─── Stage 2: Build ──────────────────────────────────────────────────────────
 FROM node:20-alpine AS build
+
+RUN apk add --no-cache openssl
 
 WORKDIR /app
 
@@ -31,6 +35,9 @@ FROM node:20-alpine AS production
 WORKDIR /app
 
 ENV NODE_ENV=production
+
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl
 
 # Security: run as non-root user
 RUN addgroup --system --gid 1001 nodejs && \

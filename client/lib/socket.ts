@@ -8,7 +8,12 @@ export function connectSocket(): Socket {
   const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
   if (!token) throw new Error('No token for WebSocket');
 
-  socket = io('http://localhost:3000', {
+  // In production, connect to the same host on port 3000
+  const wsUrl = typeof window !== 'undefined'
+    ? `${window.location.protocol}//${window.location.hostname}:3000`
+    : 'http://localhost:3000';
+
+  socket = io(wsUrl, {
     auth: { token },
     transports: ['websocket', 'polling'],
     reconnection: true,

@@ -1,6 +1,26 @@
 version: "3.9"
 
 services:
+  # ─── Frontend (Next.js) ────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "80:3001"
+    environment:
+      NODE_ENV: production
+    depends_on:
+      - app
+    restart: unless-stopped
+    networks:
+      - taskflow-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+
   # ─── Application Server ───────────────────────────────────────────────────
   app:
     build:

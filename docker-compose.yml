@@ -39,6 +39,7 @@ services:
       JWT_REFRESH_EXPIRES_IN: 30d
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
       APP_URL: ${APP_URL:-http://localhost:3000}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
     depends_on:
       postgres:
         condition: service_healthy

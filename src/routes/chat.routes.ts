@@ -1,6 +1,9 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import Groq from 'groq-sdk';
 import { authenticate } from '../middleware/authenticate';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 export const chatRouter = Router();
 
@@ -36,7 +39,7 @@ chatRouter.post(
       }
 
       const completion = await groq.chat.completions.create({
-        model: 'llama-3.1-8b-instant',
+        model: 'openai/gpt-oss-20b',
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           ...messages.slice(-10), // Last 10 messages for context
@@ -49,8 +52,8 @@ chatRouter.post(
 
       res.json({ success: true, data: { reply } });
     } catch (error: any) {
-      console.error('Groq API error:', error.message);
-      res.status(500).json({ success: false, error: { message: 'AI service unavailable' } });
+      console.error('Groq API error:', error.message, error.status, error.error);
+      res.status(500).json({ success: false, error: { message: 'AI service unavailable: ' + error.message } });
     }
   }
 );

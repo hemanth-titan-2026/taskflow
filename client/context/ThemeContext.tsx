@@ -14,18 +14,34 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark');
 
   useEffect(() => {
-    const saved = localStorage.getItem('theme') as Theme | null;
+    // Load theme for current org
+    const currentOrg = localStorage.getItem('currentOrg') || 'default';
+    const saved = localStorage.getItem(`theme_${currentOrg}`) as Theme | null;
     if (saved) setTheme(saved);
+    else setTheme('dark');
+  }, []);
+
+  // Listen for org changes
+  useEffect(() => {
+    function handleStorage() {
+      const currentOrg = localStorage.getItem('currentOrg') || 'default';
+      const saved = localStorage.getItem(`theme_${currentOrg}`) as Theme | null;
+      if (saved) setTheme(saved);
+    }
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
   useEffect(() => {
     document.documentElement.classList.remove('light', 'dark');
     document.documentElement.classList.add(theme);
-    localStorage.setItem('theme', theme);
   }, [theme]);
 
   function toggleTheme() {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    const currentOrg = localStorage.getItem('currentOrg') || 'default';
+    localStorage.setItem(`theme_${currentOrg}`, newTheme);
   }
 
   return (
@@ -39,4 +55,17 @@ export function useTheme() {
   const ctx = useContext(ThemeContext);
   if (!ctx) throw new Error('useTheme must be used within ThemeProvider');
   return ctx;
+}
+
+/**
+ * Call this when switching orgs to load that org's theme.
+ * If the org has no saved theme, it flips to the opposite of current.
+ */
+export function switchOrgTheme(orgSlug: string, currentTheme: Theme) {
+  const saved = localStorage.getItem(`theme_${orgSlug}`) as Theme | null;
+  if (saved) return saved;
+  // No saved theme for this org — use opposite
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  localStorage.setItem(`theme_${orgSlug}`, newTheme);
+  return newTheme;
 }

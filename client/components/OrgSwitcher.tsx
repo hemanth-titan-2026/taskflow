@@ -1,10 +1,13 @@
 "use client";
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
+import { switchOrgTheme } from '@/context/ThemeContext';
 import api from '@/lib/api';
 
 export default function OrgSwitcher() {
   const { organizations, currentOrg, setCurrentOrg } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [open, setOpen] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState('');
@@ -41,7 +44,15 @@ export default function OrgSwitcher() {
         <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-xl shadow-lg z-50 overflow-hidden">
           <div className="p-1">
             {organizations.map(org => (
-              <button key={org.id} onClick={() => { setCurrentOrg(org); setOpen(false); window.location.reload(); }}
+              <button key={org.id} onClick={() => {
+                const newTheme = switchOrgTheme(org.slug, theme);
+                setCurrentOrg(org);
+                setOpen(false);
+                // Apply theme immediately
+                document.documentElement.classList.remove('light', 'dark');
+                document.documentElement.classList.add(newTheme);
+                window.location.reload();
+              }}
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${org.slug === currentOrg?.slug ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
                 <span className="w-5 h-5 bg-primary text-primary-foreground rounded flex items-center justify-center text-[10px] font-bold">{org.name[0].toUpperCase()}</span>
                 <span className="flex-1 text-left truncate">{org.name}</span>
